@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard RH — Parkdale Mills 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0F1923;--bg2:#162030;--bg3:#1C2A3A;--bg4:#243347;
+  --bd:rgba(255,255,255,0.08);--bd2:rgba(255,255,255,0.14);
+  --tx:#FFFFFF;--txm:rgba(255,255,255,0.7);--txl:rgba(255,255,255,0.4);
+  --v1:#1B4332;--v2:#2D6A4F;--v3:#52B788;
+  --a1:#1565C0;--a2:#42A5F5;
+  --am:#F57F17;--r1:#B71C1C;--r2:#EF5350;
+  --mo:#6A1B9A;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--tx)}
+.app{display:flex;flex-direction:column;min-height:100vh}
+
+/* TOPBAR */
+.topbar{background:var(--v1);padding:13px 28px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.1);position:sticky;top:0;z-index:100}
+.topbar-l{display:flex;align-items:center;gap:12px}
+.logo{width:36px;height:36px;background:rgba(255,255,255,0.15);border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;border:1px solid rgba(255,255,255,0.2)}
+.topbar h1{font-size:15px;font-weight:600}
+.topbar p{font-size:11px;color:rgba(255,255,255,0.55);margin-top:1px}
+.badge-alert{font-size:11px;background:rgba(239,83,80,0.2);color:#EF9A9A;padding:4px 12px;border-radius:20px;border:1px solid rgba(239,83,80,0.3)}
+.live{display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(255,255,255,0.5)}
+.dot{width:7px;height:7px;border-radius:50%;background:#52B788;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* FILTERS */
+.filters{padding:12px 28px;background:var(--bg2);border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.fl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--txl);margin-right:2px}
+.fb{padding:5px 13px;border-radius:20px;border:1px solid var(--bd2);background:transparent;color:var(--txm);font-size:12px;font-family:"DM Sans",sans-serif;cursor:pointer;transition:all .15s}
+.fb:hover{border-color:var(--v3);color:var(--tx)}
+.fb.active{background:var(--v1);border-color:var(--v3);color:#fff;font-weight:500}
+.fsep{width:1px;height:18px;background:var(--bd2);margin:0 4px}
+
+/* GRID */
+.main{padding:20px 24px 48px;display:grid;grid-template-columns:repeat(12,1fr);gap:14px;flex:1}
+.c3{grid-column:span 3}.c4{grid-column:span 4}.c6{grid-column:span 6}
+.c8{grid-column:span 8}.c12{grid-column:span 12}
+
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--bd);border-radius:13px;padding:18px;overflow:hidden;transition:border-color .2s}
+.card:hover{border-color:var(--bd2)}
+.ch{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px}
+.ct{font-size:13px;font-weight:600;color:var(--tx)}
+.cs{font-size:11px;color:var(--txl);margin-top:3px}
+.cbadge{font-size:10px;font-weight:500;padding:3px 8px;border-radius:20px;background:rgba(82,183,136,0.12);color:var(--v3);border:1px solid rgba(82,183,136,0.2);white-space:nowrap}
+.cw{position:relative;width:100%}
+
+/* KPI */
+.kpi-icon{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:17px}
+.kv{font-size:34px;font-weight:700;font-family:"DM Mono",monospace;letter-spacing:-.02em;line-height:1}
+.kl{font-size:11px;color:var(--txm);margin-top:5px}
+.ktag{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:500;padding:3px 7px;border-radius:20px;margin-top:7px}
+.kup{background:rgba(82,183,136,0.15);color:#52B788}
+.kdn{background:rgba(183,28,28,0.15);color:#EF5350}
+.knu{background:rgba(255,255,255,0.08);color:var(--txm)}
+.kbar{height:3px;background:var(--bd);border-radius:2px;margin-top:12px;overflow:hidden}
+.kbf{height:100%;border-radius:2px;transition:width .8s ease}
+
+/* ANALYSIS PANEL */
+.analysis{background:var(--bg3);border-radius:10px;padding:12px 14px;margin-top:12px;font-size:12px;color:var(--txm);line-height:1.6;border-left:3px solid var(--v3)}
+.analysis strong{color:var(--tx)}
+
+/* TABLE */
+table.dt{width:100%;border-collapse:collapse}
+table.dt th{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--txl);padding:7px 10px;text-align:left;border-bottom:1px solid var(--bd)}
+table.dt td{font-size:12px;padding:9px 10px;border-bottom:1px solid var(--bd);color:var(--txm)}
+table.dt tr:last-child td{border-bottom:none}
+table.dt tr:hover td{background:rgba(255,255,255,0.02);color:var(--tx)}
+.mono{font-family:"DM Mono",monospace;font-size:12px}
+.bh1{background:rgba(46,125,50,0.2);color:#66BB6A;padding:2px 7px;border-radius:8px;font-size:11px;font-weight:500}
+.bh2{background:rgba(21,101,192,0.2);color:#64B5F6;padding:2px 7px;border-radius:8px;font-size:11px;font-weight:500}
+.bh3{background:rgba(230,81,0,0.2);color:#FF8A65;padding:2px 7px;border-radius:8px;font-size:11px;font-weight:500}
+.btot{background:rgba(82,183,136,0.15);color:#52B788;padding:2px 7px;border-radius:8px;font-size:11px;font-weight:600}
+
+/* SECTION */
+.sec{grid-column:span 12;display:flex;align-items:center;gap:10px;padding:4px 0}
+.sec span{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--txl);white-space:nowrap}
+.sec::before,.sec::after{content:"";flex:1;height:1px;background:var(--bd)}
+
+/* DIVIDER LEGEND */
+.dleg{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px}
+.dli{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--txm)}
+.dld{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+@media(max-width:1100px){.c3{grid-column:span 6}.c8{grid-column:span 12}.c4{grid-column:span 6}}
+@media(max-width:700px){.c3,.c4,.c6,.c8{grid-column:span 12}.main{padding:14px}.filters{padding:10px 14px}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="topbar">
+  <div class="topbar-l">
+    <div class="logo">PM</div>
+    <div><h1>Dashboard RH — Parkdale Mills</h1><p>Recursos Humanos & Desarrollo Organizacional · Honduras</p></div>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <span class="badge-alert" id="alertBadge">⚠️ 14 new hires YTD ya se retiraron · Prom: 57 días</span>
+    <span class="live"><span class="dot"></span>YTD Abril 2026</span>
+  </div>
+</div>
+
+<div class="filters">
+  <span class="fl">Planta</span>
+  <button class="fb active" onclick="filt('todas',this,'p')">Todas</button>
+  <button class="fb" onclick="filt('H1',this,'p')">H1 — Choloma</button>
+  <button class="fb" onclick="filt('H2',this,'p')">H2 — San Juan</button>
+  <button class="fb" onclick="filt('H3',this,'p')">H3 — San Juan</button>
+  <div class="fsep"></div>
+  <span class="fl">Mes</span>
+  <button class="fb active" onclick="filt('todos',this,'m')">YTD</button>
+  <button class="fb" onclick="filt('Enero',this,'m')">Enero</button>
+  <button class="fb" onclick="filt('Febrero',this,'m')">Febrero</button>
+  <button class="fb" onclick="filt('Marzo',this,'m')">Marzo</button>
+  <button class="fb" onclick="filt('Abril',this,'m')">Abril</button>
+</div>
+
+<div class="main">
+
+  <!-- KPIs -->
+  <div class="card c3" id="kHC">
+    <div class="kpi-icon" style="background:rgba(82,183,136,0.15)">👥</div>
+    <div class="kv" id="vHC">617</div>
+    <div class="kl">Headcount Total</div>
+    <span class="ktag knu" id="vHCsub">H1: 185 · H2: 151 · H3: 281</span>
+    <div class="kbar"><div class="kbf" id="bHC" style="width:87%;background:#52B788"></div></div>
+  </div>
+
+  <div class="card c3">
+    <div class="kpi-icon" style="background:rgba(66,165,245,0.15)">📥</div>
+    <div class="kv" style="color:#64B5F6" id="vIng">14</div>
+    <div class="kl">Nuevas Contrataciones YTD</div>
+    <span class="ktag knu" id="vIngSub">Ene: 10 · Feb: 4</span>
+    <div class="kbar"><div class="kbf" id="bIng" style="width:14%;background:#42A5F5"></div></div>
+  </div>
+
+  <div class="card c3">
+    <div class="kpi-icon" style="background:rgba(183,28,28,0.15)">📤</div>
+    <div class="kv" style="color:#EF5350" id="vSal">90</div>
+    <div class="kl">Total Salidas YTD</div>
+    <span class="ktag kdn" id="vSalSub">▼ Mar fue el pico: 54</span>
+    <div class="kbar"><div class="kbf" id="bSal" style="width:85%;background:#EF5350"></div></div>
+  </div>
+
+  <div class="card c3">
+    <div class="kpi-icon" style="background:rgba(245,127,23,0.15)">🔄</div>
+    <div class="kv" style="color:#FFB74D" id="vRot">14.02%</div>
+    <div class="kl">Rotación Ponderada YTD</div>
+    <span class="ktag kdn" id="vRotSub">▼ vs 33.55% en 2025</span>
+    <div class="kbar"><div class="kbf" id="bRot" style="width:42%;background:#F57F17"></div></div>
+  </div>
+
+  <!-- SECTION 1 -->
+  <div class="sec"><span>Headcount</span></div>
+
+  <!-- HC TREND -->
+  <div class="card c6">
+    <div class="ch">
+      <div><div class="ct">HC Trend 2022 – YTD 2026</div><div class="cs">Total organización</div></div>
+      <span class="cbadge">Empresa</span>
+    </div>
+    <div class="cw" style="height:200px"><canvas id="cHCTrend"></canvas></div>
+    <div class="analysis" id="aHCTrend">
+      <strong>Análisis:</strong> El headcount alcanzó su pico en 2024 con 708 colaboradores. En 2025 se redujo a 677 y en 2026 YTD está en 589 — reflejo del proceso de ajuste y estabilización operativa.
+    </div>
+  </div>
+
+  <!-- HC PROYECTADO VS REAL -->
+  <div class="card c6">
+    <div class="ch">
+      <div><div class="ct">HC Proyectado vs Real — Abril 2026</div><div class="cs">Por planta</div></div>
+      <span class="cbadge" id="hcLabel">Abril 2026</span>
+    </div>
+    <div class="cw" style="height:200px"><canvas id="cHCPlanta"></canvas></div>
+    <div class="analysis" id="aHCPlanta">
+      <strong>Análisis:</strong> H1 supera la proyección en 24 personas (+14.9%). H2 supera en 7 (+4.9%). H3 está ligeramente bajo la proyección por 3 personas (-1.1%). En total se superó el plan en +28 colaboradores.
+    </div>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="sec"><span>Rotación General</span></div>
+
+  <!-- TURNOVER HISTORICO GENERAL -->
+  <div class="card c8">
+    <div class="ch">
+      <div><div class="ct">Turnover 2022 – YTD 2026 — Total Empresa</div><div class="cs">Voluntario · Involuntario · No especificado · % Ponderado</div></div>
+      <span class="cbadge">General</span>
+    </div>
+    <div class="cw" style="height:220px"><canvas id="cTurnGen"></canvas></div>
+    <div class="dleg">
+      <div class="dli"><div class="dld" style="background:#EF5350"></div>Involuntario</div>
+      <div class="dli"><div class="dld" style="background:#FFB74D"></div>Voluntario</div>
+      <div class="dli"><div class="dld" style="background:#90A4AE"></div>No Especificado</div>
+      <div class="dli"><div class="dld" style="background:#52B788;border-radius:50%"></div>% Ponderado</div>
+    </div>
+    <div class="analysis">
+      <strong>2025 fue el año más crítico:</strong> 209 salidas totales y 33.55% de rotación. En YTD 2026 (hasta Abril) ya se redujo a 14.02% — tendencia a la baja significativa. El componente involuntario sigue siendo el mayor.
+    </div>
+  </div>
+
+  <!-- NEW HIRE TURNOVER KPIs -->
+  <div class="card c4">
+    <div class="ch"><div><div class="ct">New Hire Turnover YTD 2026</div><div class="cs">Solo nuevas contrataciones</div></div></div>
+    <div style="display:flex;flex-direction:column;gap:14px;margin-top:4px">
+      <div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+          <span style="font-size:12px;color:var(--txm)">Voluntario</span>
+          <span style="font-size:13px;font-weight:500;color:#FFB74D">0.85%</span>
+        </div>
+        <div class="kbar"><div class="kbf" style="width:42%;background:#FFB74D"></div></div>
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+          <span style="font-size:12px;color:var(--txm)">Involuntario</span>
+          <span style="font-size:13px;font-weight:500;color:#EF5350">0.17%</span>
+        </div>
+        <div class="kbar"><div class="kbf" style="width:8%;background:#EF5350"></div></div>
+      </div>
+      <div style="border-top:1px solid var(--bd);padding-top:12px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+          <span style="font-size:12px;font-weight:600;color:var(--tx)">Total New Hire</span>
+          <span style="font-size:15px;font-weight:700;color:#64B5F6">1.02%</span>
+        </div>
+        <div class="kbar"><div class="kbf" style="width:50%;background:#42A5F5"></div></div>
+      </div>
+    </div>
+    <div class="analysis" style="margin-top:14px">
+      <strong>Buena señal:</strong> El turnover de nuevas contrataciones es solo 1.02% YTD, indicando que quienes llegan se están quedando más tiempo que en años anteriores.
+    </div>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="sec"><span>Análisis Mensual YTD 2026</span></div>
+
+  <!-- NEW HIRE MENSUAL 13 MESES -->
+  <div class="card c8">
+    <div class="ch">
+      <div><div class="ct">New Hire Turnover Mensual</div><div class="cs">Abril 2025 – Abril 2026 · con Benchmark organizacional</div></div>
+      <span class="cbadge">13 meses</span>
+    </div>
+    <div class="cw" style="height:220px"><canvas id="cNHTMensual"></canvas></div>
+    <div class="analysis">
+      <strong>Marzo 2026 fue el pico:</strong> 54 salidas totales (46 involuntarias). El benchmark organizacional ese mes fue 8.81%. Abril ya bajó drásticamente a 12 salidas. La tendencia de nuevas contrataciones que se retiran va en descenso.
+    </div>
+  </div>
+
+  <!-- TABLA MES A MES -->
+  <div class="card c4">
+    <div class="ch"><div><div class="ct">Resumen Mensual YTD</div><div class="cs">Enero – Abril 2026</div></div></div>
+    <table class="dt">
+      <thead><tr><th>Mes</th><th>Salidas</th><th>Inv</th><th>Vol</th><th>Rot%</th></tr></thead>
+      <tbody>
+        <tr><td>Enero</td><td class="mono">15</td><td class="mono" style="color:#EF5350">7</td><td class="mono" style="color:#FFB74D">7</td><td class="mono" style="color:#FFB74D">2.35%</td></tr>
+        <tr><td>Febrero</td><td class="mono">9</td><td class="mono" style="color:#EF5350">8</td><td class="mono" style="color:#FFB74D">1</td><td class="mono">1.34%</td></tr>
+        <tr><td style="color:#EF5350;font-weight:600">Marzo ⚠️</td><td class="mono" style="color:#EF5350;font-weight:600">54</td><td class="mono" style="color:#EF5350;font-weight:600">46</td><td class="mono" style="color:#FFB74D">8</td><td class="mono" style="color:#EF5350;font-weight:600">8.81%</td></tr>
+        <tr><td>Abril</td><td class="mono">12</td><td class="mono" style="color:#EF5350">6</td><td class="mono" style="color:#FFB74D">5</td><td class="mono" style="color:#FFB74D">2.04%</td></tr>
+        <tr style="border-top:2px solid var(--bd2)"><td style="font-weight:600;color:var(--tx)">Total</td><td class="mono" style="font-weight:600;color:var(--tx)">90</td><td class="mono" style="color:#EF5350;font-weight:600">67</td><td class="mono" style="color:#FFB74D;font-weight:600">21</td><td class="mono" style="color:#EF5350;font-weight:600">14.02%</td></tr>
+      </tbody>
+    </table>
+    <div class="analysis" style="margin-top:12px">
+      <strong>Marzo representa el 60%</strong> de todas las salidas del año. Sin Marzo, el YTD sería 4.01% — dentro de rangos normales.
+    </div>
+  </div>
+
+  <!-- SECTION 4 -->
+  <div class="sec"><span>Rotación por Planta — Histórico y Actual</span></div>
+
+  <!-- H1 HISTORICO -->
+  <div class="card c4">
+    <div class="ch">
+      <div><div class="ct">H1 — Choloma · Turnover 2022–2026</div><div class="cs">Voluntario · Involuntario · NS · Benchmark</div></div>
+      <span class="cbadge" style="background:rgba(46,125,50,0.15);color:#66BB6A;border-color:rgba(46,125,50,0.3)">16.43% YTD</span>
+    </div>
+    <div class="cw" style="height:200px"><canvas id="cH1Hist"></canvas></div>
+    <div class="analysis">
+      <strong>2025 fue crítico para H1</strong> con 43.53% de rotación. YTD 2026 bajó a 16.43%. El componente involuntario domina con 23 salidas de las 29 totales.
+    </div>
+  </div>
+
+  <!-- H2 HISTORICO -->
+  <div class="card c4">
+    <div class="ch">
+      <div><div class="ct">H2 — San Juan · Turnover 2022–2026</div><div class="cs">Voluntario · Involuntario · NS · Benchmark</div></div>
+      <span class="cbadge" style="background:rgba(21,101,192,0.15);color:#64B5F6;border-color:rgba(21,101,192,0.3)">9.97% YTD</span>
+    </div>
+    <div class="cw" style="height:200px"><canvas id="cH2Hist"></canvas></div>
+    <div class="analysis">
+      <strong>H2 tiene la mejor rotación</strong> YTD con 9.97% — la más baja de las tres plantas. En 2025 llegó a 22.98% pero ya muestra recuperación significativa.
+    </div>
+  </div>
+
+  <!-- H3 HISTORICO -->
+  <div class="card c4">
+    <div class="ch">
+      <div><div class="ct">H3 — San Juan · Turnover 2022–2026</div><div class="cs">Voluntario · Involuntario · NS · Benchmark</div></div>
+      <span class="cbadge" style="background:rgba(230,81,0,0.15);color:#FF8A65;border-color:rgba(230,81,0,0.3)">14.77% YTD</span>
+    </div>
+    <div class="cw" style="height:200px"><canvas id="cH3Hist"></canvas></div>
+    <div class="analysis">
+      <strong>H3 tuvo el peor 2025</strong> con 36.99% de rotación (108 salidas). YTD 2026 bajó a 14.77%. El componente voluntario fue alto en 2024-2025.
+    </div>
+  </div>
+
+  <!-- TURNOVER ABRIL POR PLANTA -->
+  <div class="card c6">
+    <div class="ch">
+      <div><div class="ct" id="titAbril">Desglose Turnover — Abril 2026 por Planta</div><div class="cs">Voluntario · Involuntario · No especificado</div></div>
+      <span class="cbadge" id="badgeAbril">Abril</span>
+    </div>
+    <div class="cw" style="height:200px"><canvas id="cAbrilPlanta"></canvas></div>
+    <div class="analysis" id="aAbril">
+      <strong>Abril 2026:</strong> H1 tuvo 7 salidas (6 involuntarias — la más alta). H2 solo 1 salida voluntaria. H3 tuvo 4 salidas (3 voluntarias). Total: 12 salidas a nivel corporativo.
+    </div>
+  </div>
+
+  <!-- RESUMEN POR PLANTA -->
+  <div class="card c6">
+    <div class="ch"><div><div class="ct">Resumen Comparativo por Planta — YTD</div><div class="cs">HC · Ingresos · Salidas · Rotación ponderada</div></div></div>
+    <table class="dt">
+      <thead><tr><th>Planta</th><th>HC Real</th><th>HC Proy.</th><th>Ingresos</th><th>Salidas</th><th>Rot%</th></tr></thead>
+      <tbody id="tbPlanta">
+        <tr><td><span class="bh1">H1</span></td><td class="mono">185</td><td class="mono">161</td><td class="mono" style="color:#64B5F6">1</td><td class="mono" style="color:#EF5350">29</td><td class="mono" style="color:#EF5350">16.43%</td></tr>
+        <tr><td><span class="bh2">H2</span></td><td class="mono">151</td><td class="mono">144</td><td class="mono" style="color:#64B5F6">3</td><td class="mono" style="color:#EF5350">16</td><td class="mono" style="color:#FFB74D">9.97%</td></tr>
+        <tr><td><span class="bh3">H3</span></td><td class="mono">281</td><td class="mono">284</td><td class="mono" style="color:#64B5F6">10</td><td class="mono" style="color:#EF5350">45</td><td class="mono" style="color:#EF5350">14.77%</td></tr>
+        <tr style="border-top:2px solid var(--bd2)"><td><span class="btot">Total</span></td><td class="mono" style="font-weight:600;color:var(--tx)">617</td><td class="mono" style="color:var(--txl)">589</td><td class="mono" style="color:#64B5F6;font-weight:600">14</td><td class="mono" style="color:#EF5350;font-weight:600">90</td><td class="mono" style="color:#EF5350;font-weight:600">14.02%</td></tr>
+      </tbody>
+    </table>
+    <div class="analysis" style="margin-top:12px">
+      <strong>H2 lidera</strong> con la menor rotación (9.97%). <strong>H1 tiene la mayor</strong> con 16.43% — principalmente involuntaria. H3 concentra el mayor número de ingresos (10) y salidas (45) por ser la planta más grande.
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+Chart.defaults.color = 'rgba(255,255,255,0.5)';
+Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
+Chart.defaults.font.family = "'DM Sans', sans-serif";
+Chart.defaults.font.size = 11;
+
+const TT = { backgroundColor:'#1C2A3A', borderColor:'rgba(255,255,255,0.1)', borderWidth:1, padding:10 };
+
+const DATA = {
+  todos:   { todas:{hc:617,ing:14,sal:90,rot:'14.02%',inv:67,vol:21,ns:2}, H1:{hc:185,ing:1,sal:29,rot:'16.43%',inv:23,vol:5,ns:1},  H2:{hc:151,ing:3,sal:16,rot:'9.97%',inv:11,vol:5,ns:0},  H3:{hc:281,ing:10,sal:45,rot:'14.77%',inv:33,vol:11,ns:1} },
+  Enero:   { todas:{hc:617,ing:10,sal:15,rot:'2.35%', inv:7, vol:7, ns:1}, H1:{hc:185,ing:1,sal:5, rot:'2.70%',inv:2, vol:3, ns:0},  H2:{hc:151,ing:3,sal:4, rot:'2.65%',inv:2, vol:2, ns:0},  H3:{hc:281,ing:6,sal:6, rot:'2.14%',inv:3, vol:2, ns:1} },
+  Febrero: { todas:{hc:617,ing:4, sal:9, rot:'1.34%', inv:8, vol:1, ns:0}, H1:{hc:185,ing:0,sal:3, rot:'1.62%',inv:3, vol:0, ns:0},  H2:{hc:151,ing:2,sal:2, rot:'1.32%',inv:2, vol:0, ns:0},  H3:{hc:281,ing:2,sal:4, rot:'1.42%',inv:3, vol:1, ns:0} },
+  Marzo:   { todas:{hc:617,ing:0, sal:54,rot:'8.81%', inv:46,vol:8, ns:0}, H1:{hc:185,ing:0,sal:18,rot:'9.73%',inv:15,vol:3, ns:0},  H2:{hc:151,ing:0,sal:8, rot:'5.30%',inv:7, vol:1, ns:0},  H3:{hc:281,ing:0,sal:28,rot:'9.96%',inv:24,vol:4, ns:0} },
+  Abril:   { todas:{hc:617,ing:0, sal:12,rot:'2.04%', inv:6, vol:5, ns:1}, H1:{hc:185,ing:0,sal:7, rot:'3.78%',inv:6, vol:1, ns:0},  H2:{hc:151,ing:0,sal:1, rot:'0.66%',inv:0, vol:1, ns:0},  H3:{hc:281,ing:0,sal:4, rot:'1.42%',inv:0, vol:3, ns:1} },
+};
+
+const MESES = ['Enero','Febrero','Marzo','Abril'];
+let curMes = 'todos', curPlanta = 'todas';
+
+// HC Trend
+new Chart(document.getElementById('cHCTrend'), {
+  type: 'bar',
+  data: {
+    labels: ['2022','2023','2024','2025','YTD 2026'],
+    datasets: [{
+      label: 'Headcount',
+      data: [222, 404, 708, 677, 589],
+      backgroundColor: ['rgba(82,183,136,0.4)','rgba(82,183,136,0.5)','rgba(82,183,136,0.8)','rgba(239,83,80,0.6)','rgba(66,165,245,0.8)'],
+      borderColor: ['#52B788','#52B788','#52B788','#EF5350','#42A5F5'],
+      borderWidth: 1.5, borderRadius: 6, borderSkipped: false
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display:false }, tooltip: TT },
+    scales: {
+      x: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'rgba(255,255,255,0.5)'} },
+      y: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'rgba(255,255,255,0.5)'} }
+    }
+  }
+});
+
+// HC Proyectado vs Real
+const hcPlanta = new Chart(document.getElementById('cHCPlanta'), {
+  type: 'bar',
+  data: {
+    labels: ['H1','H2','H3'],
+    datasets: [
+      { label:'Proyectado', data:[161,144,284], backgroundColor:'rgba(82,183,136,0.5)', borderColor:'#52B788', borderWidth:1.5, borderRadius:5, borderSkipped:false },
+      { label:'Real',       data:[185,151,281], backgroundColor:'rgba(66,165,245,0.7)', borderColor:'#42A5F5', borderWidth:1.5, borderRadius:5, borderSkipped:false }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position:'top', labels:{color:'rgba(255,255,255,0.65)',padding:12,usePointStyle:true} },
+      tooltip: TT
+    },
+    scales: {
+      x: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'rgba(255,255,255,0.5)'} },
+      y: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'rgba(255,255,255,0.5)'} }
+    }
+  }
+});
+
+// Turnover General historico con dual axis
+const turnGen = new Chart(document.getElementById('cTurnGen'), {
+  type: 'bar',
+  data: {
+    labels: ['2022','2023','2024','2025','YTD 2026'],
+    datasets: [
+      { label:'Involuntario', data:[11,38,100,126,67], backgroundColor:'rgba(239,83,80,0.8)',  borderRadius:4, borderSkipped:false, yAxisID:'y' },
+      { label:'Voluntario',   data:[5,40,106,75,21],   backgroundColor:'rgba(255,183,77,0.8)', borderRadius:4, borderSkipped:false, yAxisID:'y' },
+      { label:'NS',           data:[1,10,20,8,2],      backgroundColor:'rgba(144,164,174,0.8)',borderRadius:4, borderSkipped:false, yAxisID:'y' },
+      { label:'% Rotacion',   data:[7.66,21.78,31.92,33.55,14.02], type:'line',
+        borderColor:'#52B788', backgroundColor:'transparent', borderWidth:2.5,
+        pointBackgroundColor:'#52B788', pointRadius:4, tension:0.3, yAxisID:'y2' }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: TT
+    },
+    scales: {
+      x: { stacked:true, grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'rgba(255,255,255,0.5)'} },
+      y: { stacked:true, grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'rgba(255,255,255,0.5)'}, position:'left' },
+      y2: { position:'right', grid:{display:false}, ticks:{color:'#52B788', callback: function(v){ return v+'%'; }}, min:0, max:45 }
+    }
+  }
+});
+
+// New Hire Turnover 13 meses
+const nhMeses = ['Abr 25','May 25','Jun 25','Jul 25','Ago 25','Sep 25','Oct 25','Nov 25','Dic 25','Ene 26','Feb 26','Mar 26','Abr 26'];
+new Chart(document.getElementById('cNHTMensual'), {
+  type: 'bar',
+  data: {
+    labels: nhMeses,
+    datasets: [
+      { label:'Involuntario', data:[0,11,20,14,4,6,23,3,12,7,8,46,6], backgroundColor:'rgba(239,83,80,0.8)', borderRadius:3, borderSkipped:false, yAxisID:'y' },
+      { label:'Voluntario',   data:[3,3,17,10,2,6,6,1,1,7,1,8,5],    backgroundColor:'rgba(255,183,77,0.8)', borderRadius:3, borderSkipped:false, yAxisID:'y' },
+      { label:'NS',           data:[0,8,2,1,0,0,0,0,0,1,0,0,1],      backgroundColor:'rgba(144,164,174,0.8)',borderRadius:3, borderSkipped:false, yAxisID:'y' },
+      { label:'Benchmark %',  data:[0.03,0.08,5.75,3.69,0.90,1.82,4.55,0.63,2.09,2.35,1.34,8.81,2.04], type:'line',
+        borderColor:'rgba(82,183,136,0.8)', backgroundColor:'transparent', borderWidth:2,
+        pointRadius:3, tension:0.3, yAxisID:'y2', borderDash:[4,3] }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position:'top', labels:{color:'rgba(255,255,255,0.65)',padding:10,usePointStyle:true,font:{size:10}} },
+      tooltip: TT
+    },
+    scales: {
+      x: { stacked:true, grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'rgba(255,255,255,0.5)',maxRotation:45} },
+      y: { stacked:true, grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'rgba(255,255,255,0.5)'}, position:'left' },
+      y2: { position:'right', grid:{display:false}, ticks:{color:'rgba(82,183,136,0.7)', callback: function(v){ return v+'%'; }}, min:0, max:12 }
+    }
+  }
+});
+
+// H1 Historico
+new Chart(document.getElementById('cH1Hist'), {
+  type: 'bar',
+  data: {
+    labels: ['H1 2022','H1 2023','H1 2024','H1 2025','H1 2026'],
+    datasets: [
+      { label:'Involuntario', data:[11,24,46,40,23], backgroundColor:'rgba(239,83,80,0.8)',  borderRadius:4, borderSkipped:false, yAxisID:'y' },
+      { label:'Voluntario',   data:[3,30,41,30,5],   backgroundColor:'rgba(255,183,77,0.8)', borderRadius:4, borderSkipped:false, yAxisID:'y' },
+      { label:'NS',           data:[1,5,2,4,1],      backgroundColor:'rgba(144,164,174,0.7)',borderRadius:4, borderSkipped:false, yAxisID:'y' },
+      { label:'Benchmark%',   data:[6.76,14.60,12.57,43.53,16.43], type:'line',
+        borderColor:'#66BB6A', backgroundColor:'transparent', borderWidth:2,
+        pointBackgroundColor:'#66BB6A', pointRadius:3, tension:0.3, yAxisID:'y2' }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend:{display:false}, tooltip:TT },
+    scales: {
+      x: { stacked:true, grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'rgba(255,255,255,0.5)'} },
+      y: { stacked:true, grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'rgba(255,255,255,0.5)'} },
+      y2: { position:'right', grid:{display:false}, ticks:{color:'#66BB6A', callback: function(v){ return v+'%'; }}, min:0 }
+    }
+  }
+});
+
+// H2 Historico
+new Chart(document.getElementById('cH2Hist'), {
+  type: 'bar',
+  data: {
+    labels: ['H2 2022','H2 2023','H2 2024','H2 2025','H2 2026'],
+    datasets: [
+      { label:'Involuntario', data:[0,6,17,20,11], backgroundColor:'rgba(239,83,80,0.8)',  borderRadius:4, borderSkipped:false, yAxisID:'y' },
+      { label:'Voluntario',   data:[2,8,15,16,5],  backgroundColor:'rgba(255,183,77,0.8)', borderRadius:4, borderSkipped:false, yAxisID:'y' },
+      { label:'NS',           data:[0,4,6,1,0],    backgroundColor:'rgba(144,164,174,0.7)',borderRadius:4, borderSkipped:false, yAxisID:'y' },
+      { label:'Benchmark%',   data:[0.90,4.46,5.43,22.98,9.97], type:'line',
+        borderColor:'#64B5F6', backgroundColor:'transparent', borderWidth:2,
+        pointBackgroundColor:'#64B5F6', pointRadius:3, tension:0.3, yAxisID:'y2' }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend:{display:false}, tooltip:TT },
+    scales: {
+      x: { stacked:true, grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'rgba(255,255,255,0.5)'} },
+      y: { stacked:true, grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'rgba(255,255,255,0.5)'} },
+      y2: { position:'right', grid:{display:false}, ticks:{color:'#64B5F6', callback: function(v){ return v+'%'; }}, min:0 }
+    }
+  }
+});
+
+// H3 Historico
+new Chart(document.getElementById('cH3Hist'), {
+  type: 'bar',
+  data: {
+    labels: ['H3 2022','H3 2023','H3 2024','H3 2025','H3 2026'],
+    datasets: [
+      { label:'Involuntario', data:[0,8,30,62,33],  backgroundColor:'rgba(239,83,80,0.8)',  borderRadius:4, borderSkipped:false, yAxisID:'y' },
+      { label:'Voluntario',   data:[0,2,39,43,11],  backgroundColor:'rgba(255,183,77,0.8)', borderRadius:4, borderSkipped:false, yAxisID:'y' },
+      { label:'NS',           data:[0,1,10,3,1],    backgroundColor:'rgba(144,164,174,0.7)',borderRadius:4, borderSkipped:false, yAxisID:'y' },
+      { label:'Benchmark%',   data:[0.00,2.72,11.16,36.99,14.77], type:'line',
+        borderColor:'#FF8A65', backgroundColor:'transparent', borderWidth:2,
+        pointBackgroundColor:'#FF8A65', pointRadius:3, tension:0.3, yAxisID:'y2' }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend:{display:false}, tooltip:TT },
+    scales: {
+      x: { stacked:true, grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'rgba(255,255,255,0.5)'} },
+      y: { stacked:true, grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'rgba(255,255,255,0.5)'} },
+      y2: { position:'right', grid:{display:false}, ticks:{color:'#FF8A65', callback: function(v){ return v+'%'; }}, min:0 }
+    }
+  }
+});
+
+// Desglose por planta (interactivo)
+const abrilChart = new Chart(document.getElementById('cAbrilPlanta'), {
+  type: 'bar',
+  data: {
+    labels: ['H1','H2','H3'],
+    datasets: [
+      { label:'Involuntario', data:[6,0,0], backgroundColor:'rgba(239,83,80,0.8)',  borderRadius:4, borderSkipped:false },
+      { label:'Voluntario',   data:[1,1,3], backgroundColor:'rgba(255,183,77,0.8)', borderRadius:4, borderSkipped:false },
+      { label:'NS',           data:[0,0,1], backgroundColor:'rgba(144,164,174,0.7)',borderRadius:4, borderSkipped:false }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position:'top', labels:{color:'rgba(255,255,255,0.65)',padding:10,usePointStyle:true} },
+      tooltip: TT
+    },
+    scales: {
+      x: { stacked:true, grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'rgba(255,255,255,0.5)'} },
+      y: { stacked:true, grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'rgba(255,255,255,0.5)'} }
+    }
+  }
+});
+
+// FILTERS
+function filt(val, btn, type) {
+  document.querySelectorAll('.filters .fb').forEach(function(b) {
+    var oc = b.getAttribute('onclick') || '';
+    if (oc.indexOf(",'"+type+"'") !== -1) {
+      b.classList.remove('active');
+    }
+  });
+  btn.classList.add('active');
+  if (type === 'p') curPlanta = val;
+  else curMes = val;
+  updateAll();
+}
+
+function updateAll() {
+  var d = DATA[curMes][curPlanta];
+  var mesLabel = curMes === 'todos' ? 'Abril' : curMes;
+
+  // KPIs
+  document.getElementById('vHC').textContent  = d.hc;
+  document.getElementById('vIng').textContent = d.ing;
+  document.getElementById('vSal').textContent = d.sal;
+  document.getElementById('vRot').textContent = d.rot;
+
+  if (curMes === 'todos') {
+    document.getElementById('vHCsub').textContent  = 'H1: '+DATA.todos.H1.hc+' · H2: '+DATA.todos.H2.hc+' · H3: '+DATA.todos.H3.hc;
+    document.getElementById('vIngSub').textContent = 'Ene: 10 · Feb: 4';
+    document.getElementById('vSalSub').textContent = 'Pico en Marzo: 54 salidas';
+    document.getElementById('vRotSub').textContent = 'vs 33.55% en 2025';
+  } else {
+    document.getElementById('vHCsub').textContent  = 'Inv: '+d.inv+' · Vol: '+d.vol+' · NS: '+d.ns;
+    document.getElementById('vIngSub').textContent = d.ing > 0 ? d.ing+' en '+curMes : 'Sin ingresos';
+    document.getElementById('vSalSub').textContent = d.inv+' inv · '+d.vol+' vol · '+d.ns+' NS';
+    document.getElementById('vRotSub').textContent = 'Pico fue Marzo: 8.81%';
+  }
+
+  // HC Planta chart
+  if (curPlanta === 'todas') {
+    hcPlanta.data.labels = ['H1','H2','H3'];
+    hcPlanta.data.datasets[0].data = [161, 144, 284];
+    hcPlanta.data.datasets[1].data = [DATA[curMes].H1.hc, DATA[curMes].H2.hc, DATA[curMes].H3.hc];
+  } else {
+    var proy = {H1:161, H2:144, H3:284};
+    hcPlanta.data.labels = [curPlanta];
+    hcPlanta.data.datasets[0].data = [proy[curPlanta]];
+    hcPlanta.data.datasets[1].data = [d.hc];
+  }
+  hcPlanta.update();
+
+  // Abril/mes por planta chart
+  var mKey = curMes === 'todos' ? 'Abril' : curMes;
+  if (curPlanta === 'todas') {
+    abrilChart.data.labels = ['H1','H2','H3'];
+    abrilChart.data.datasets[0].data = [DATA[mKey].H1.inv, DATA[mKey].H2.inv, DATA[mKey].H3.inv];
+    abrilChart.data.datasets[1].data = [DATA[mKey].H1.vol, DATA[mKey].H2.vol, DATA[mKey].H3.vol];
+    abrilChart.data.datasets[2].data = [DATA[mKey].H1.ns,  DATA[mKey].H2.ns,  DATA[mKey].H3.ns];
+  } else {
+    abrilChart.data.labels = [curPlanta];
+    abrilChart.data.datasets[0].data = [DATA[mKey][curPlanta].inv];
+    abrilChart.data.datasets[1].data = [DATA[mKey][curPlanta].vol];
+    abrilChart.data.datasets[2].data = [DATA[mKey][curPlanta].ns];
+  }
+  document.getElementById('titAbril').textContent = 'Desglose Turnover — '+mesLabel+' por Planta';
+  document.getElementById('badgeAbril').textContent = mesLabel;
+  abrilChart.update();
+
+  // Alert badge
+  document.getElementById('alertBadge').textContent =
+    (curMes === 'todos' ? 'YTD 2026' : curMes) +
+    (curPlanta === 'todas' ? ' — Todas' : ' · '+curPlanta) +
+    ': ' + d.sal + ' salidas · Rot: ' + d.rot;
+}
+</script>
+
+</body>
+</html>
